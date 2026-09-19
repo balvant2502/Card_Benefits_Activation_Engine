@@ -29,6 +29,10 @@ public class BenefitRule {
     // Keyword match in merchant name (optional, comma separated)
     private String merchantKeywords;
 
+    // Card product conditions. A blank value matches any card.
+    private String cardType;
+    private String cardNetwork;
+
     // Priority for rule matching (higher = evaluated first)
     private Integer priority = 0;
 

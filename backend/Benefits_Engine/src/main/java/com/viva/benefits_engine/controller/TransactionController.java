@@ -2,6 +2,8 @@ package com.viva.benefits_engine.controller;
 
 import com.viva.benefits_engine.models.Transaction;
 import com.viva.benefits_engine.service.TransactionService;
+import com.viva.benefits_engine.service.ClaimService;
+import com.viva.benefits_engine.service.RulesEngineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +19,23 @@ public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
+    @Autowired
+    private RulesEngineService rulesEngineService;
+
+    @Autowired
+    private ClaimService claimService;
+
     @PostMapping
     public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) {
         Transaction saved = transactionService.saveTransaction(transaction);
+        RulesEngineService.EligibilityResult result = rulesEngineService.checkEligibility(saved);
+        if (result.isEligible()) {
+            claimService.createEligibleClaim(saved, rulesEngineService.getBenefitById(result.getBenefitId()));
+            saved.setIsEligible(true);
+            saved.setEligibleBenefitName(result.getBenefitName());
+            saved.setEligibilityReason(result.getReason());
+            saved = transactionService.updateTransaction(saved);
+        }
         return ResponseEntity.ok(saved);
     }
 

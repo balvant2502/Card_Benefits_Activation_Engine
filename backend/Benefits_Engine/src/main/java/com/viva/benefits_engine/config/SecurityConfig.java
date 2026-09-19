@@ -2,6 +2,7 @@ package com.viva.benefits_engine.config;
 
 import com.viva.benefits_engine.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,6 +37,22 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter();
     }
 
+    /**
+     * Prevent Spring Boot from auto-registering JwtAuthenticationFilter as a
+     * standalone servlet filter. It must only run inside the Spring Security
+     * filter chain (added via addFilterBefore), otherwise it executes twice and
+     * the second pass has no security context, causing permitAll() routes like
+     * /api/auth/** to return 401.
+     */
+    @Bean
+    public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(
+            JwtAuthenticationFilter filter) {
+        FilterRegistrationBean<JwtAuthenticationFilter> registration =
+                new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -52,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/transactions/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/eligibility/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/claims/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/api/claim-notifications/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/benefits/**").hasRole("ADMIN")
                         .requestMatchers("/api/metrics/**").hasRole("ADMIN")
                         .anyRequest().authenticated());
@@ -61,4 +79,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-

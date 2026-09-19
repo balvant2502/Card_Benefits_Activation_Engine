@@ -20,8 +20,8 @@ public class MetricsService {
     @Autowired
     private ClaimService claimService;
 
-    public Metrics recordMetrics(BigDecimal detectionAccuracy, BigDecimal prefillQuality) {
-        Metrics metrics = new Metrics();
+    public com.viva.benefits_engine.models.Metrics recordMetrics(BigDecimal detectionAccuracy, BigDecimal prefillQuality) {
+        Metrics metrics = new com.viva.benefits_engine.models.Metrics();
         metrics.setDetectionAccuracy(detectionAccuracy);
         metrics.setPrefillQuality(prefillQuality);
         metrics.setUnclaimedBenefitCount(getUnclaimedBenefitCount());

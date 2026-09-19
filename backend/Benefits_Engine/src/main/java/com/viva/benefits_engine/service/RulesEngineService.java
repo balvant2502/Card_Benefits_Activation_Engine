@@ -34,6 +34,20 @@ public class RulesEngineService {
     }
 
     private boolean isRuleMatched(Transaction transaction, BenefitRule rule) {
+        if (transaction.getCard() == null || !Boolean.TRUE.equals(transaction.getCard().getIsActive())) {
+            return false;
+        }
+
+        if (transaction.getUser() == null || transaction.getCard().getUser() == null
+                || !transaction.getCard().getUser().getId().equals(transaction.getUser().getId())) {
+            return false;
+        }
+
+        if (!isValueMatched(transaction.getCard().getCardType(), rule.getCardType())
+                || !isValueMatched(transaction.getCard().getCardNetwork(), rule.getCardNetwork())) {
+            return false;
+        }
+
         // Check category
         if (!isCategoryMatched(transaction.getCategory(), rule.getCategory())) {
             return false;
@@ -56,6 +70,11 @@ public class RulesEngineService {
         }
 
         return true;
+    }
+
+    private boolean isValueMatched(String actualValue, String configuredValue) {
+        return configuredValue == null || configuredValue.isBlank()
+                || (actualValue != null && actualValue.equalsIgnoreCase(configuredValue.trim()));
     }
 
     private boolean isCategoryMatched(String txnCategory, String ruleCategory) {

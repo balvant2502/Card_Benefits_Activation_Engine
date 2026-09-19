@@ -4,6 +4,7 @@ import com.viva.benefits_engine.models.*;
 import com.viva.benefits_engine.repository.ClaimRepository;
 import com.viva.benefits_engine.repository.ClaimAuditRepository;
 import com.viva.benefits_engine.repository.BenefitRepository;
+import com.viva.benefits_engine.repository.ClaimNotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,9 @@ public class ClaimService {
     private BenefitRepository benefitRepository;
 
     @Autowired
+    private ClaimNotificationRepository claimNotificationRepository;
+
+    @Autowired
     private TransactionService transactionService;
 
     public Claim createClaim(Long transactionId, Long benefitId, Long userId) {
@@ -31,6 +35,11 @@ public class ClaimService {
         Optional<Benefit> benefit = benefitRepository.findById(benefitId);
 
         if (transaction.isEmpty() || benefit.isEmpty()) {
+            return null;
+        }
+
+        if (transaction.get().getUser() == null || !transaction.get().getUser().getId().equals(userId)
+                || claimRepository.existsByTransactionIdAndBenefitId(transactionId, benefitId)) {
             return null;
         }
 
@@ -46,8 +55,39 @@ public class ClaimService {
 
         Claim savedClaim = claimRepository.save(claim);
         recordAudit(savedClaim, null, ClaimStatus.ELIGIBLE, "SYSTEM", "Claim created and eligible");
+        createNotification(savedClaim);
 
         return savedClaim;
+    }
+
+    public Claim createEligibleClaim(Transaction transaction, Benefit benefit) {
+        if (transaction == null || benefit == null
+                || transaction.getUser() == null
+                || claimRepository.existsByTransactionIdAndBenefitId(transaction.getId(), benefit.getId())) {
+            return null;
+        }
+
+        Claim claim = new Claim();
+        claim.setTransaction(transaction);
+        claim.setBenefit(benefit);
+        claim.setUser(transaction.getUser());
+        claim.setStatus(ClaimStatus.ELIGIBLE);
+        claim.setPrefilledData(buildPrefilledData(transaction));
+
+        Claim savedClaim = claimRepository.save(claim);
+        recordAudit(savedClaim, null, ClaimStatus.ELIGIBLE, "SYSTEM",
+                "Eligible benefit detected for the card transaction");
+        createNotification(savedClaim);
+        return savedClaim;
+    }
+
+    private void createNotification(Claim claim) {
+        ClaimNotification notification = new ClaimNotification();
+        notification.setUser(claim.getUser());
+        notification.setClaim(claim);
+        notification.setMessage("You may claim " + claim.getBenefit().getName()
+                + " for your " + claim.getTransaction().getMerchant() + " transaction.");
+        claimNotificationRepository.save(notification);
     }
 
     private String buildPrefilledData(Transaction transaction) {
