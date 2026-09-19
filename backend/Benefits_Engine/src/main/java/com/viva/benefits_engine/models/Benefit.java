@@ -21,7 +21,7 @@ public class Benefit {
 
     private BigDecimal minAmount;
 
-    // Comma separated fields needed in the claim form
+    // Comma  fields needed in the claim form
     @Column(length = 500)
     private String requiredClaimFields;
 
