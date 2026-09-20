@@ -1,0 +1,6 @@
+.git
+.gitignore
+frontend/node_modules
+frontend/dist
+backend/Benefits_Engine/target
+backend/Benefits_Engine/.idea
