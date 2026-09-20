@@ -3,6 +3,7 @@ package com.viva.benefits_engine.service;
 import com.viva.benefits_engine.dto.LoginRequest;
 import com.viva.benefits_engine.dto.RegisterRequest;
 import com.viva.benefits_engine.dto.AuthResponse;
+import com.viva.benefits_engine.dto.UserProfileResponse;
 import com.viva.benefits_engine.models.User;
 import com.viva.benefits_engine.models.UserRole;
 import com.viva.benefits_engine.repository.UserRepository;
@@ -107,5 +108,12 @@ public class AuthService {
             );
         }
         return new AuthResponse(null, null, null, null, null, "User not found");
+    }
+
+    public UserProfileResponse getProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return new UserProfileResponse(user.getId(), user.getName(), user.getEmail(),
+                user.getPhone(), user.getAddress(), user.getRole().name());
     }
 }

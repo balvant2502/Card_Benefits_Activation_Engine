@@ -31,6 +31,11 @@ public class VirtualCardController {
         return ResponseEntity.ok(virtualCardService.getCardsForUser(authentication.getName()));
     }
 
+    @PostMapping("/me")
+    public ResponseEntity<VirtualCardResponse> createMyCard(Authentication authentication) {
+        return ResponseEntity.ok(virtualCardService.createCardForUser(authentication.getName()));
+    }
+
     @PostMapping("/{cardId}/benefits/{benefitId}")
     public ResponseEntity<CardBenefit> assignBenefit(
             @PathVariable Long cardId, @PathVariable Long benefitId) {

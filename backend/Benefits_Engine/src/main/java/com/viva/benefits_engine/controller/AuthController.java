@@ -3,6 +3,7 @@ package com.viva.benefits_engine.controller;
 import com.viva.benefits_engine.dto.LoginRequest;
 import com.viva.benefits_engine.dto.RegisterRequest;
 import com.viva.benefits_engine.dto.AuthResponse;
+import com.viva.benefits_engine.dto.UserProfileResponse;
 import com.viva.benefits_engine.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -48,5 +49,10 @@ public class AuthController {
         String email = authentication.getName();
         AuthResponse response = authService.getCurrentUser(email);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
+        return ResponseEntity.ok(authService.getProfile(authentication.getName()));
     }
 }
