@@ -10,6 +10,7 @@ import com.viva.benefits_engine.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -74,7 +75,9 @@ public class AuthService {
                     )
             );
 
-            User user = userRepository.findByEmail(request.getEmail()).get();
+            String authenticatedEmail = authentication.getName();
+            User user = userRepository.findByEmail(authenticatedEmail)
+                    .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
             String token = jwtTokenProvider.generateToken(authentication);
 
             return new AuthResponse(
@@ -85,7 +88,7 @@ public class AuthService {
                     token,
                     "Login successful"
             );
-        } catch (Exception e) {
+        } catch (AuthenticationException e) {
             return new AuthResponse(null, null, null, null, null, "Invalid email or password");
         }
     }

@@ -65,9 +65,12 @@ public class SecurityConfig {
                         }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                         .requestMatchers("/api/transactions/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/eligibility/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/claims/*/approve", "/api/claims/*/reject")
+                        .hasRole("ADMIN")
                         .requestMatchers("/api/claims/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/claim-notifications/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/benefits/**").hasRole("ADMIN")
