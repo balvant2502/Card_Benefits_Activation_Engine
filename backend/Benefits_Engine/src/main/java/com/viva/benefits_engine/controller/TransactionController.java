@@ -4,6 +4,8 @@ import com.viva.benefits_engine.models.Transaction;
 import com.viva.benefits_engine.service.TransactionService;
 import com.viva.benefits_engine.service.ClaimService;
 import com.viva.benefits_engine.service.RulesEngineService;
+import com.viva.benefits_engine.dto.DummySwipeRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +27,22 @@ public class TransactionController {
     @Autowired
     private ClaimService claimService;
 
+    @PostMapping("/dummy-swipe")
+    public ResponseEntity<Transaction> dummySwipe(
+            @RequestBody(required = false) DummySwipeRequest request,
+            Authentication authentication) {
+        Transaction transaction = transactionService.createDummySwipe(
+                authentication.getName(), request);
+        return ResponseEntity.ok(processEligibility(transaction));
+    }
+
     @PostMapping
     public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) {
         Transaction saved = transactionService.saveTransaction(transaction);
+        return ResponseEntity.ok(processEligibility(saved));
+    }
+
+    private Transaction processEligibility(Transaction saved) {
         RulesEngineService.EligibilityResult result = rulesEngineService.checkEligibility(saved);
         if (result.isEligible()) {
             claimService.createEligibleClaim(saved, rulesEngineService.getBenefitById(result.getBenefitId()));
@@ -36,7 +51,7 @@ public class TransactionController {
             saved.setEligibilityReason(result.getReason());
             saved = transactionService.updateTransaction(saved);
         }
-        return ResponseEntity.ok(saved);
+        return saved;
     }
 
     @GetMapping("/{id}")

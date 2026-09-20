@@ -6,6 +6,7 @@ tracking the claim lifecycle for card transactions.
 ## What it provides
 
 - JWT-based registration and login
+- Demo virtual-card creation during registration
 - Role-based access for customers and administrators
 - Benefit and benefit-rule management
 - Transaction capture and benefit eligibility checks
@@ -94,6 +95,7 @@ The security policy grants access as follows:
 | `/api/claims/**` | `CUSTOMER` or `ADMIN` |
 | `/api/benefits/**` | `ADMIN` |
 | `/api/metrics/**` | `ADMIN` |
+| `/api/cards/**` | `CUSTOMER` or `ADMIN` |
 
 Example registration and login requests:
 
@@ -108,6 +110,20 @@ Invoke-RestMethod -Method Post `
   -ContentType 'application/json' `
   -Body '{"email":"jane@example.com","password":"change-me"}'
 ```
+
+Each successful registration creates one simulated virtual card. After login,
+use the returned JWT to retrieve the authenticated user's cards:
+
+```http
+GET /api/cards/me
+Authorization: Bearer <token>
+```
+
+The current provider is deliberately a mock for hackathon development. It
+returns only safe metadata such as the network and last four digits; it never
+creates or stores a real card number, expiry date, or CVV. Replace
+`MockVirtualCardProvider` with an issuer implementation when a card provider is
+available.
 
 ## API overview
 

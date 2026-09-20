@@ -11,4 +11,5 @@ public interface BenefitRuleRepository extends JpaRepository<BenefitRule, Long> 
     List<BenefitRule> findByIsActiveTrueOrderByPriorityDesc();
     List<BenefitRule> findByCategory(String category);
     List<BenefitRule> findByBenefitId(Long benefitId);
+    List<BenefitRule> findByCardBenefitCardIdAndIsActiveTrueOrderByPriorityDesc(Long cardId);
 }

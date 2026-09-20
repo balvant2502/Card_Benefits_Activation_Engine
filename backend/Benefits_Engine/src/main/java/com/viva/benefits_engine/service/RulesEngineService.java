@@ -3,6 +3,7 @@ package com.viva.benefits_engine.service;
 import com.viva.benefits_engine.models.*;
 import com.viva.benefits_engine.repository.BenefitRepository;
 import com.viva.benefits_engine.repository.BenefitRuleRepository;
+import com.viva.benefits_engine.repository.CardBenefitRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +20,15 @@ public class RulesEngineService {
     @Autowired
     private BenefitRepository benefitRepository;
 
+    @Autowired
+    private CardBenefitRepository cardBenefitRepository;
+
     public EligibilityResult checkEligibility(Transaction transaction) {
-        List<BenefitRule> rules = benefitRuleRepository.findByIsActiveTrueOrderByPriorityDesc();
+        if (transaction.getCard() == null) {
+            return new EligibilityResult(false, null, null, "Transaction has no card");
+        }
+        List<BenefitRule> rules = benefitRuleRepository
+                .findByCardBenefitCardIdAndIsActiveTrueOrderByPriorityDesc(transaction.getCard().getId());
 
         for (BenefitRule rule : rules) {
             if (isRuleMatched(transaction, rule)) {

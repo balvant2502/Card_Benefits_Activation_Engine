@@ -72,6 +72,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/claim-notifications/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/benefits/**").hasRole("ADMIN")
                         .requestMatchers("/api/metrics/**").hasRole("ADMIN")
+                        .requestMatchers("/api/cards/*/benefits/*").hasRole("ADMIN")
+                        .requestMatchers("/api/cards/*/benefits/*/rules").hasRole("ADMIN")
+                        .requestMatchers("/api/cards/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

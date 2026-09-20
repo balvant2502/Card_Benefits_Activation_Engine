@@ -31,6 +31,9 @@ public class AuthService {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired
+    private VirtualCardService virtualCardService;
+
     public AuthResponse register(RegisterRequest request) {
         // Check if email already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -47,6 +50,7 @@ public class AuthService {
         user.setRole(UserRole.CUSTOMER);
 
         User savedUser = userRepository.save(user);
+        virtualCardService.createInitialCard(savedUser);
 
         // Generate token
         String token = jwtTokenProvider.generateTokenFromEmail(savedUser.getEmail(), "ROLE_CUSTOMER");

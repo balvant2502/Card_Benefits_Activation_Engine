@@ -17,6 +17,10 @@ public class BenefitRule {
     @JoinColumn(name = "benefit_id", nullable = false)
     private Benefit benefit;
 
+    @ManyToOne
+    @JoinColumn(name = "card_benefit_id")
+    private CardBenefit cardBenefit;
+
     // Rule condition: category
     private String category;
 
